@@ -18,3 +18,14 @@
   Ces dossiers contiennent des fichiers volumineux et binaires (images et poids de réseaux de neurones). Les ignorer dans Git évite d'alourdir le dépôt ; ils seront suivis séparément via DVC (fichiers `.dvc` et cache DVC).
 * **Pourquoi la reproductibilité nécessite-t-elle plus que `random.seed(seed)` ?**
   Un pipeline PyTorch utilise plusieurs générateurs aléatoires indépendants (Python standard, NumPy, PyTorch CPU, PyTorch GPU/CUDA, ainsi que les workers parallèles des `DataLoader`). Tous doivent être fixés et les opérations non déterministes de cuDNN doivent être désactivées.
+
+
+## Milestone 1: Repeatability & Random Seeding
+
+### Engineering Checkpoint 2
+* **Pourquoi fixer uniquement `random.seed(seed)` ne suffit-il pas dans un pipeline PyTorch ?**
+  PyTorch, NumPy et Python utilisent chacun leur propre générateur de nombres pseudo-aléatoires (PRNG) indépendant. De plus, sur GPU (CUDA/cuDNN), le choix automatique d'algorithmes rapides (`cudnn.benchmark = True`) introduit du non-déterminisme matériel, et les processus parallèles (`workers`) d'un `DataLoader` doivent recevoir leur propre graine dérivée (`seed_worker`) ainsi qu'un `torch.Generator` dédié (`make_generator`) pour garantir un mélange (`shuffle`) et une augmentation de données reproductibles.
+* **Quelles limites subsistent malgré ces réglages ?**
+  La reproductibilité exacte au bit près reste sensible aux changements de matériel (différents modèles de GPU ou exécution CPU vs GPU), aux changements de version de CUDA/PyTorch, ainsi qu'à certaines opérations atomiques parallèles sur GPU qui ne disposent pas d'implémentation déterministe.
+
+
