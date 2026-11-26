@@ -29,3 +29,10 @@
   La reproductibilité exacte au bit près reste sensible aux changements de matériel (différents modèles de GPU ou exécution CPU vs GPU), aux changements de version de CUDA/PyTorch, ainsi qu'à certaines opérations atomiques parallèles sur GPU qui ne disposent pas d'implémentation déterministe.
 
 
+## Milestone 2: Data Versioning with DVC
+
+### Engineering Checkpoint 3
+* **Comment DVC et Git collaborent-ils pour versionner `data/raw` ?**
+  Les images brutes sont placées dans `data/raw/` (ignoré par Git) et stockées dans le cache/remote DVC sous forme d'empreintes numériques (hash MD5). DVC génère un petit fichier métadonnée `data/raw.dvc` contenant ce hash, lequel est versionné dans Git. Chaque commit Git pointe ainsi vers une version exacte et immuable des données sans stocker de fichiers binaires lourds dans Git.
+* **Que se passerait-il si une image était modifiée ou supprimée dans `data/raw` ?**
+  `dvc status` détecterait immédiatement que le hash réel du dossier ne correspond plus à celui enregistré dans `data/raw.dvc`. On peut alors soit restaurer les données d'origine via `dvc checkout`, soit enregistrer la nouvelle version avec `dvc add data/raw` et un nouveau commit Git.
