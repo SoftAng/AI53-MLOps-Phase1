@@ -36,3 +36,20 @@
   Les images brutes sont placées dans `data/raw/` (ignoré par Git) et stockées dans le cache/remote DVC sous forme d'empreintes numériques (hash MD5). DVC génère un petit fichier métadonnée `data/raw.dvc` contenant ce hash, lequel est versionné dans Git. Chaque commit Git pointe ainsi vers une version exacte et immuable des données sans stocker de fichiers binaires lourds dans Git.
 * **Que se passerait-il si une image était modifiée ou supprimée dans `data/raw` ?**
   `dvc status` détecterait immédiatement que le hash réel du dossier ne correspond plus à celui enregistré dans `data/raw.dvc`. On peut alors soit restaurer les données d'origine via `dvc checkout`, soit enregistrer la nouvelle version avec `dvc add data/raw` et un nouveau commit Git.
+
+
+## Milestone 4: DVC Pipeline Design
+
+### 4.2 Design & Dependencies Analysis
+* **Should `PREPARE` depend on `reports/data_quality.json`?**
+  Oui. Cela crée une dépendance explicite dans le DAG : `prepare` ne peut pas s'exécuter tant que la porte de contrôle qualité (`validate`) n'a pas réussi et généré ce rapport.
+* **Should `PREPARE` also depend directly on `data/raw`?**
+  Oui. `reports/data_quality.json` est un résumé statistique qui ne contient pas les pixels des images ; `prepare` doit lire directement les fichiers bruts dans `data/raw` pour les redimensionner et générer les manifestes.
+* **Which changes in `params.yaml` should make `TRAIN` run again?**
+  Uniquement les paramètres qui influencent l'entraînement et le suivi : `data.image_size`, `train.*`, `augmentation.*`, `compute.device` et `tracking.*`. Modifier `selection.run_id` ou `evaluation.batch_size` ne doit pas déclencher un réentraînement.
+* **Why should `EVALUATE` track `selection.run_id`?**
+  `evaluate` charge le modèle candidat depuis MLflow à l'aide de cet identifiant. Suivre `selection.run_id` garantit que DVC rejoue `evaluate` uniquement lorsqu'un nouveau modèle candidat est sélectionné pour le test final.
+* **Which file contains scores that DVC should track as metrics?**
+  `reports/train_summary.json` (pour l'étape `train`) et `reports/test_metrics.json` (pour l'étape `evaluate`) contiennent les métriques numériques et doivent être déclarés sous `metrics:` avec `cache: false`.
+
+

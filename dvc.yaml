@@ -1,0 +1,85 @@
+stages:
+  validate:
+    cmd: uv run --locked python -m src.validate_data
+    deps:
+      - pyproject.toml
+      - uv.lock
+      - src/validate_data.py
+      - data/raw
+    outs:
+      - reports/data_quality.json:
+          cache: false
+
+  prepare:
+    cmd: uv run --locked python -m src.prepare
+    deps:
+      - pyproject.toml
+      - uv.lock
+      - src/prepare.py
+      - data/raw
+      - reports/data_quality.json
+    params:
+      - data.image_size
+    outs:
+      - data/processed/train
+      - data/processed/validation
+      - data/processed/test
+      - data/processed/manifests
+      - reports/data_summary.json:
+          cache: false
+
+  train:
+    cmd: uv run --locked python -m src.train
+    deps:
+      - pyproject.toml
+      - uv.lock
+      - src/train.py
+      - src/data.py
+      - src/model.py
+      - src/provenance.py
+      - src/reproducibility.py
+      - data/processed/train
+      - data/processed/validation
+      - data/processed/manifests/train.csv
+      - data/processed/manifests/validation.csv
+    params:
+      - data.image_size
+      - train
+      - augmentation
+      - compute.device
+      - tracking
+    outs:
+      - models/model.pt
+      - reports/training_curves.png:
+          cache: false
+      - reports/run_manifest.json:
+          cache: false
+    metrics:
+      - reports/train_summary.json:
+          cache: false
+
+  evaluate:
+    cmd: uv run --locked python -m src.evaluate
+    deps:
+      - pyproject.toml
+      - uv.lock
+      - src/evaluate.py
+      - src/data.py
+      - src/provenance.py
+      - src/reproducibility.py
+      - data/processed/test
+      - data/processed/manifests/train.csv
+      - data/processed/manifests/validation.csv
+      - data/processed/manifests/test.csv
+    params:
+      - data.image_size
+      - evaluation.batch_size
+      - selection.run_id
+      - compute.device
+      - tracking
+    outs:
+      - reports/test_confusion_matrix.png:
+          cache: false
+    metrics:
+      - reports/test_metrics.json:
+          cache: false
