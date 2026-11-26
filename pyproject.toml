@@ -9,7 +9,7 @@ dependencies = [
     "mlflow>=3.17,<3.18",
     "numpy>=2.0,<3",
     "pandas>=2.2,<3",
-    "pillow>=11,<13",
+    "pillow>=11,<14",
     "pyyaml>=6,<7",
     "scikit-learn>=1.6,<2",
     "torch>=2.10,<2.12",
@@ -18,7 +18,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "pytest>=8,<9",
+    "pytest>=8,<10",
 ]
 
 # The lab uses CPU-only PyTorch wheels from the index below.
