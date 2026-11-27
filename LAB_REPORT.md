@@ -83,3 +83,17 @@
 
 
 Run ID (Run A): f8e01a5e404b4f05baae19fdcd6b55e1
+Run ID (Run B): 19c50be4db0d4fd7bf8adb6e40748ffb
+
+### 6.4 Verification Results (Run A & Run B)
+
+* **Run A (`learning_rate: 0.001`) Run ID :** `f8e01a5e404b4f05baae19fdcd6b55e1` (`best_val_macro_f1 = 0.6445`, `val_accuracy = 0.6466`, `val_loss = 0.8471`)
+* **Run B (`learning_rate: 0.0003`) Run ID :** `19c50be4db0d4fd7bf8adb6e40748ffb` (`best_val_macro_f1 = 0.6091`, `val_accuracy = 0.6165`, `val_loss = 0.8927`)
+
+| Check / Change | VALIDATE | PREPARE | TRAIN | EVALUATE | Terminal Evidence |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Check 1: No change | REUSED | REUSED | REUSED | NOT RUN | `Stage 'validate' didn't change, skipping` / `Stage 'prepare' didn't change, skipping` / `Stage 'train' didn't change, skipping` |
+| Check 2: Comment in `src/validate_data.py` | RERUN | REUSED | REUSED | NOT RUN | `Running stage 'validate'` / `Stage 'prepare' didn't change, skipping` / `Stage 'train' didn't change, skipping` |
+| Run B: `train.learning_rate = 0.0003` | REUSED | REUSED | RERUN | NOT RUN | `'data\raw.dvc' didn't change, skipping` / `Stage 'validate' didn't change, skipping` / `Stage 'prepare' didn't change, skipping` / `Running stage 'train'` |
+
+* **Comparaison avec les prédictions du 6.1 :** Les observations réelles correspondent exactement à nos prédictions : l'ajout d'un commentaire dans `src/validate_data.py` n'a relancé que `validate` grâce au rapport JSON déterministe, et la baisse du `learning_rate` n'a relancé que `train` en réutilisant les images préparées (`prepare`). Pour `EVALUATE`, DVC affiche `NOT RUN` plutôt que `REUSED` uniquement parce que la commande ciblait `dvc repro train` (qui s'arrête avant la branche d'évaluation). Par ailleurs, comme anticipé au 6.3, le `learning_rate = 0.0003` converge plus lentement sur 4 époques (`val_macro_f1 = 0.6091` contre `0.6445` pour Run A).
