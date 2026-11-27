@@ -95,6 +95,7 @@ def main() -> None:
     )
     print(json.dumps(report, indent=2, sort_keys=True))
 
+# comment added to check
 
 if __name__ == "__main__":
     main()

@@ -53,3 +53,33 @@
   `reports/train_summary.json` (pour l'étape `train`) et `reports/test_metrics.json` (pour l'étape `evaluate`) contiennent les métriques numériques et doivent être déclarés sous `metrics:` avec `cache: false`.
 
 
+## Milestone 5: Record What Each MLflow Run Used
+
+### Engineering Checkpoint 4
+* **Git :** Enregistre la version exacte du code source (le hash SHA du commit et l'indicateur *dirty* signalant d'éventuelles modifications locales non commitées) utilisée pour exécuter l'entraînement.
+* **DVC :** Enregistre les empreintes numériques exactes des jeux de données et des artefacts lourds (via `.dvc` et `dvc.lock`) ainsi que les dépendances du pipeline qui les ont produits.
+* **MLflow :** Enregistre le journal complet de chaque exécution d'entraînement, incluant ses hyperparamètres, le jeu de données d'entrée, les métriques à chaque époque, les artefacts générés et le modèle PyTorch entraîné avec sa signature.
+
+
+## Milestone 6: Predict Which Stages Need to Run Again
+
+### 6.1 Predictions Before Running DVC
+
+| Change | VALIDATE | PREPARE | TRAIN | EVALUATE |
+| :--- | :--- | :--- | :--- | :--- |
+| Change `train.learning_rate` | REUSED | REUSED | RERUN | REUSED |
+| Change `data.image_size` | REUSED | RERUN | RERUN | NEEDS UPDATE |
+| Edit `src/validate_data.py`; the quality report stays the same | RERUN | REUSED | REUSED | REUSED |
+| Edit only `README.md` | REUSED | REUSED | REUSED | REUSED |
+
+#### Engineering Checkpoint 5
+* **Changement de paramètre (`data.image_size`) :** `VALIDATE` est `REUSED` car il ne lit pas `params.yaml`. `PREPARE` est `RERUN` car `data.image_size` figure dans ses `params:` ; il réécrit alors `data/processed/*` et les manifestes. `TRAIN` est `RERUN` car il suit `data.image_size` et dépend de `data/processed/train` et `validation`. `EVALUATE` est `NEEDS UPDATE` car il suit `data.image_size` et dépend de `data/processed/test` dont le contenu a changé.
+* **Modification de fichier (`src/validate_data.py`, rapport inchangé) :** `VALIDATE` est `RERUN` car `src/validate_data.py` est déclaré dans ses `deps:`. Cependant, comme `reports/data_quality.json` est déterministe (sans horodatage), son hash reste identique après exécution : `PREPARE`, `TRAIN` et `EVALUATE` conservent exactement les mêmes entrées et sont donc `REUSED`.
+
+
+### 6.3 Pre-Training Decisions
+* **Métrique principale et critère de départage :** La métrique principale de sélection est **`val_macro_f1`** afin d'accorder le même poids à chacune des 3 classes. En cas d'égalité (à 4 décimales), le départage se fera sur la **`val_loss`** la plus faible (puis `val_accuracy` la plus élevée).
+* **Effet attendu d'une baisse du `learning_rate` (`0.001` $\rightarrow$ `0.0003`) :** Avec un pas d'apprentissage plus petit sur seulement 4 époques, la descente de gradient sera plus régulière et moins oscillante, mais la convergence risque d'être plus lente (pouvant donner une perte de validation plus stable ou un F1 légèrement inférieur si 4 époques ne suffisent pas à converger).
+
+
+Run ID (Run A): f8e01a5e404b4f05baae19fdcd6b55e1

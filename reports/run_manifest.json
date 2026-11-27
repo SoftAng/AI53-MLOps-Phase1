@@ -1,0 +1,33 @@
+{
+  "git": {
+    "commit": "7641324fa3d0d9d2b2dc5c2c430c7485a1cd7793",
+    "dirty": true
+  },
+  "data": {
+    "training_data_identity": "92f093303c75f5af"
+  },
+  "execution": {
+    "mlflow_run_id": "f8e01a5e404b4f05baae19fdcd6b55e1",
+    "device": "cpu",
+    "random_state": 42
+  },
+  "environment": {
+    "platform": "Windows-11-10.0.26300-SP0",
+    "python": "3.12.16",
+    "torch": "2.11.0+cpu",
+    "torchvision": "0.26.0+cpu",
+    "dvc": "3.67.1",
+    "mlflow": "3.17.1",
+    "cuda_runtime": "none"
+  },
+  "configuration": {
+    "image_size": 96,
+    "batch_size": 32,
+    "epochs": 4,
+    "learning_rate": 0.001,
+    "dropout": 0.3,
+    "augmentation_enabled": false,
+    "horizontal_flip": 0.5,
+    "rotation_degrees": 10
+  }
+}

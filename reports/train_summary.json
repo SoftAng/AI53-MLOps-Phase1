@@ -1,0 +1,9 @@
+{
+  "device": "cpu",
+  "epochs": 4,
+  "final_train_loss": 0.8671987914485673,
+  "final_val_accuracy": 0.6390977443609023,
+  "final_val_loss": 0.8328985549453506,
+  "final_val_macro_f1": 0.625419004269433,
+  "training_seconds": 10.340498000034131
+}
