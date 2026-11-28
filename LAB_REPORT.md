@@ -145,3 +145,14 @@ Cette sélection s’appuie exclusivement sur les résultats de validation. Le j
 Les résultats du jeu de test seront ajoutés ici après l’exécution de l’étape `evaluate`. Le Run ID indiqué dans `reports/test_metrics.json` devra être vérifié avant de reporter les métriques.
 
 
+### 8.2 Résultats de l’évaluation finale
+
+L’étape `evaluate` a chargé le modèle du Run C, ID `fabfdbf39ed74d03893722308ab2ad55`. Le champ `selected_run_id` de `reports/test_metrics.json` confirme qu’il s’agit bien du Run choisi.
+
+| Run sélectionné | Test accuracy | Test Macro-F1 | Identité des données d’entraînement |
+| :--- | :---: | :---: | :--- |
+| `fabfdbf39ed74d03893722308ab2ad55` | `0.640625` | `0.636634` | `92f093303c75f5af` |
+
+Le modèle a correctement classé 82 images sur 128. Ces résultats évaluent le modèle sélectionné sur le jeu de test, qui n’a pas servi à la sélection. Ils doivent être interprétés avec prudence, car ce jeu contient un nombre limité d’images.
+
+
