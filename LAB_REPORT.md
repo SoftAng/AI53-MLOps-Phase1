@@ -87,7 +87,7 @@ Run ID (Run B): 19c50be4db0d4fd7bf8adb6e40748ffb
 
 ### 6.4 Verification Results (Run A & Run B)
 
-* **Run A (`learning_rate: 0.001`) Run ID :** `f8e01a5e404b4f05baae19fdcd6b55e1` (`best_val_macro_f1 = 0.6445`, `val_accuracy = 0.6466`, `val_loss = 0.8471`)
+* **Run A (`learning_rate: 0.001`) Run ID :** `f8e01a5e404b4f05baae19fdcd6b55e1` (`best_val_macro_f1 = 0.625419`, `val_accuracy = 0.6466`, `val_loss = 0.8471`)
 * **Run B (`learning_rate: 0.0003`) Run ID :** `19c50be4db0d4fd7bf8adb6e40748ffb` (`best_val_macro_f1 = 0.6091`, `val_accuracy = 0.6165`, `val_loss = 0.8927`)
 
 | Check / Change | VALIDATE | PREPARE | TRAIN | EVALUATE | Terminal Evidence |
@@ -96,7 +96,7 @@ Run ID (Run B): 19c50be4db0d4fd7bf8adb6e40748ffb
 | Check 2: Comment in `src/validate_data.py` | RERUN | REUSED | REUSED | NOT RUN | `Running stage 'validate'` / `Stage 'prepare' didn't change, skipping` / `Stage 'train' didn't change, skipping` |
 | Run B: `train.learning_rate = 0.0003` | REUSED | REUSED | RERUN | NOT RUN | `'data\raw.dvc' didn't change, skipping` / `Stage 'validate' didn't change, skipping` / `Stage 'prepare' didn't change, skipping` / `Running stage 'train'` |
 
-* **Comparaison avec les prédictions du 6.1 :** Les observations réelles correspondent exactement à nos prédictions : l'ajout d'un commentaire dans `src/validate_data.py` n'a relancé que `validate` grâce au rapport JSON déterministe, et la baisse du `learning_rate` n'a relancé que `train` en réutilisant les images préparées (`prepare`). Pour `EVALUATE`, DVC affiche `NOT RUN` plutôt que `REUSED` uniquement parce que la commande ciblait `dvc repro train` (qui s'arrête avant la branche d'évaluation). Par ailleurs, comme anticipé au 6.3, le `learning_rate = 0.0003` converge plus lentement sur 4 époques (`val_macro_f1 = 0.6091` contre `0.6445` pour Run A).
+* **Comparaison avec les prédictions du 6.1 :** Les observations réelles correspondent exactement à nos prédictions : l'ajout d'un commentaire dans `src/validate_data.py` n'a relancé que `validate` grâce au rapport JSON déterministe, et la baisse du `learning_rate` n'a relancé que `train` en réutilisant les images préparées (`prepare`). Pour `EVALUATE`, DVC affiche `NOT RUN` plutôt que `REUSED` uniquement parce que la commande ciblait `dvc repro train` (qui s'arrête avant la branche d'évaluation). Par ailleurs, comme anticipé au 6.3, le `learning_rate = 0.0003` converge plus lentement sur 4 époques (`val_macro_f1 = 0.6091` contre `0.6254` pour Run A).
 
 
 ## Milestone 7: Compare Three Controlled Runs
@@ -120,3 +120,28 @@ Run ID (Run B): 19c50be4db0d4fd7bf8adb6e40748ffb
 #### Engineering Checkpoint 6
 * **Justification de la métrique principale (`val_macro_f1`) :** Pour une classification multiclasse à 3 catégories (`angular_leaf_spot`, `bean_rust`, `healthy`), la *Macro-F1* calcule la moyenne arithmétique du score F1 (équilibre précision/rappel) de chaque classe indépendamment de sa fréquence. Elle garantit ainsi que le modèle sélectionné détecte correctement les trois états sanitaires sans négliger une classe au profit des autres.
 * **Pourquoi n'utiliser le jeu de test qu'après la sélection du modèle ?** Le jeu de test (`test`, 128 images) doit rester une mesure impartiale de la capacité de généralisation sur des données totalement inédites. Si on l'utilisait pour comparer A, B et C et choisir les hyperparamètres, on introduirait une fuite d'information (*data leakage* / surapprentissage sur le jeu de test), ce qui rendrait l'évaluation finale artificiellement optimiste.
+
+
+## Milestone 8: Select and Test One Model
+
+### 8.1 Sélection du modèle
+
+La métrique principale de sélection est `val_macro_f1`, conformément au critère défini au Milestone 6. Les scores comparés sont ceux de la dernière époque, car c’est le modèle final de chaque Run qui est enregistré dans MLflow.
+
+| Run | Run ID | `val_macro_f1` final |
+| :--- | :--- | :---: |
+| A | `f8e01a5e404b4f05baae19fdcd6b55e1` | `0.625419` |
+| B | `19c50be4db0d4fd7bf8adb6e40748ffb` | `0.609117` |
+| C | `fabfdbf39ed74d03893722308ab2ad55` | `0.641604` |
+
+**Run sélectionné : Run C**, ID `fabfdbf39ed74d03893722308ab2ad55`. Il obtient le meilleur `val_macro_f1` final parmi les trois candidats. La règle de départage par `val_loss` n’a pas été nécessaire, car les scores principaux ne sont pas à égalité. Run C présente également une `val_accuracy` finale de `0.6541`.
+
+Cette sélection s’appuie exclusivement sur les résultats de validation. Le jeu de test n’a pas été utilisé pour comparer ou choisir les modèles.
+
+**Limite :** les Runs ont été comparés avec une seule graine aléatoire (`random_state=42`) et un jeu de validation de taille limitée. Le meilleur score observé ne garantit donc pas que Run C sera systématiquement supérieur avec d’autres graines ou sur d’autres données.
+
+### 8.2 Évaluation finale
+
+Les résultats du jeu de test seront ajoutés ici après l’exécution de l’étape `evaluate`. Le Run ID indiqué dans `reports/test_metrics.json` devra être vérifié avant de reporter les métriques.
+
+
