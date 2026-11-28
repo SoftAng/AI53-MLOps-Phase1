@@ -97,3 +97,10 @@ Run ID (Run B): 19c50be4db0d4fd7bf8adb6e40748ffb
 | Run B: `train.learning_rate = 0.0003` | REUSED | REUSED | RERUN | NOT RUN | `'data\raw.dvc' didn't change, skipping` / `Stage 'validate' didn't change, skipping` / `Stage 'prepare' didn't change, skipping` / `Running stage 'train'` |
 
 * **Comparaison avec les prédictions du 6.1 :** Les observations réelles correspondent exactement à nos prédictions : l'ajout d'un commentaire dans `src/validate_data.py` n'a relancé que `validate` grâce au rapport JSON déterministe, et la baisse du `learning_rate` n'a relancé que `train` en réutilisant les images préparées (`prepare`). Pour `EVALUATE`, DVC affiche `NOT RUN` plutôt que `REUSED` uniquement parce que la commande ciblait `dvc repro train` (qui s'arrête avant la branche d'évaluation). Par ailleurs, comme anticipé au 6.3, le `learning_rate = 0.0003` converge plus lentement sur 4 époques (`val_macro_f1 = 0.6091` contre `0.6445` pour Run A).
+
+
+## Milestone 7: Compare Three Controlled Runs
+
+### 7.1 Run C Hypothesis (`augmentation.enabled: true`)
+* **Modification contrôlée par rapport au Run A :** `learning_rate` remis à `0.001` (valeur de base), et activation de l'augmentation de données (`augmentation.enabled: false` $\rightarrow$ `true`, avec `horizontal_flip: 0.5` et `rotation_degrees: 15`).
+* **Effet attendu et justification :** L'augmentation de données applique des transformations aléatoires (miroir horizontal, rotations) à chaque époque, ce qui réduit le surapprentissage sur le petit jeu d'entraînement (1 034 images) et favorise la généralisation. Cependant, comme l'entraînement ne dure que 4 époques, la tâche d'apprentissage devient plus difficile à court terme : on s'attend à une perte d'entraînement (`train_loss`) plus élevée et à un score de validation (`val_macro_f1`) proche ou légèrement inférieur à celui du Run A sur 4 époques.
