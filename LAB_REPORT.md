@@ -140,10 +140,6 @@ Cette sélection s’appuie exclusivement sur les résultats de validation. Le j
 
 **Limite :** les Runs ont été comparés avec une seule graine aléatoire (`random_state=42`) et un jeu de validation de taille limitée. Le meilleur score observé ne garantit donc pas que Run C sera systématiquement supérieur avec d’autres graines ou sur d’autres données.
 
-### 8.2 Évaluation finale
-
-Les résultats du jeu de test seront ajoutés ici après l’exécution de l’étape `evaluate`. Le Run ID indiqué dans `reports/test_metrics.json` devra être vérifié avant de reporter les métriques.
-
 
 ### 8.2 Résultats de l’évaluation finale
 
