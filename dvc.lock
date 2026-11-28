@@ -129,7 +129,7 @@ stages:
     params:
       params.yaml:
         augmentation:
-          enabled: false
+          enabled: true
           horizontal_flip: 0.5
           rotation_degrees: 10
         compute.device: auto
@@ -140,23 +140,23 @@ stages:
         train:
           batch_size: 32
           epochs: 4
-          learning_rate: 0.0003
+          learning_rate: 0.001
           dropout: 0.3
           random_state: 42
     outs:
     - path: models/model.pt
       hash: md5
-      md5: 8304235c5a11796275a18ef3e23ba82c
+      md5: e8957ffe95fe9681d3b36cc277a1e210
       size: 98673
     - path: reports/run_manifest.json
       hash: md5
-      md5: f1c1023cfe5d96265f90cc36a296cf44
-      size: 767
+      md5: 9522f789b2c2efe0d0d77ec953ba5b54
+      size: 765
     - path: reports/train_summary.json
       hash: md5
-      md5: 4a427dc61b8ff4e23e7a65d0f234fb66
-      size: 256
+      md5: f124ec3f0cc7613d4f224e68d8b0d9a6
+      size: 254
     - path: reports/training_curves.png
       hash: md5
-      md5: 69d34d8037e715d075455170ef0bca34
-      size: 105238
+      md5: dcda99d83d32539fd89178c7d6a9ba09
+      size: 94067

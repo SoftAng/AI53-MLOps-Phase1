@@ -1,13 +1,13 @@
 {
   "git": {
-    "commit": "fcca1defaf1f00dd49794cd1da130359602cc99b",
+    "commit": "e645c185dc77dbd548235d65848526ab34e6119f",
     "dirty": true
   },
   "data": {
     "training_data_identity": "92f093303c75f5af"
   },
   "execution": {
-    "mlflow_run_id": "19c50be4db0d4fd7bf8adb6e40748ffb",
+    "mlflow_run_id": "fabfdbf39ed74d03893722308ab2ad55",
     "device": "cpu",
     "random_state": 42
   },
@@ -24,9 +24,9 @@
     "image_size": 96,
     "batch_size": 32,
     "epochs": 4,
-    "learning_rate": 0.0003,
+    "learning_rate": 0.001,
     "dropout": 0.3,
-    "augmentation_enabled": false,
+    "augmentation_enabled": true,
     "horizontal_flip": 0.5,
     "rotation_degrees": 10
   }

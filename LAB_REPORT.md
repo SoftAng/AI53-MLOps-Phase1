@@ -104,3 +104,19 @@ Run ID (Run B): 19c50be4db0d4fd7bf8adb6e40748ffb
 ### 7.1 Run C Hypothesis (`augmentation.enabled: true`)
 * **Modification contrôlée par rapport au Run A :** `learning_rate` remis à `0.001` (valeur de base), et activation de l'augmentation de données (`augmentation.enabled: false` $\rightarrow$ `true`, avec `horizontal_flip: 0.5` et `rotation_degrees: 15`).
 * **Effet attendu et justification :** L'augmentation de données applique des transformations aléatoires (miroir horizontal, rotations) à chaque époque, ce qui réduit le surapprentissage sur le petit jeu d'entraînement (1 034 images) et favorise la généralisation. Cependant, comme l'entraînement ne dure que 4 époques, la tâche d'apprentissage devient plus difficile à court terme : on s'attend à une perte d'entraînement (`train_loss`) plus élevée et à un score de validation (`val_macro_f1`) proche ou légèrement inférieur à celui du Run A sur 4 époques.
+
+
+### 7.2 Validation Results Comparison
+
+| Run | Controlled change | Val. Accuracy (Epoch 4) | Val. Macro-F1 (Epoch 4) | Training time (s) | MLflow Run ID |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **A** | Baseline (`lr=0.001, aug=False, dropout=0.30`) | `0.6391` | `0.6254` | `14.6s` | `f8e01a5e404b4f05baae19fdcd6b55e1` |
+| **B** | Lower learning rate (`lr=0.0003`) | `0.6165` | `0.6091` | `13.2s` | `19c50be4db0d4fd7bf8adb6e40748ffb` |
+| **C** | Data augmentation (`augmentation.enabled=True`, `rotation_degrees=10`) | `0.6541` | `0.6416` | `12.0s` | `fabfdbf39ed74d03893722308ab2ad55` |
+
+* **Comparaison B vs A :** La baisse du taux d'apprentissage à `0.0003` réduit le `val_macro_f1` final de `0.6254` à `0.6091` (`-0.0163`). Cela confirme notre prédiction : sur seulement 4 époques, un pas d'apprentissage plus petit ralentit la convergence et ne permet pas au modèle d'atteindre le niveau de performance de la référence.
+* **Comparaison C vs A :** L'activation de l'augmentation de données (`augmentation.enabled=True`) fait passer le `val_macro_f1` final de `0.6254` à `0.6416` (`+0.0162`) et la `val_accuracy` de `0.6391` à `0.6541`, tout en présentant une perte d'entraînement (`train_loss = 0.8769` vs `0.8672`) légèrement supérieure comme prévu. L'augmentation limite le surapprentissage et améliore la généralisation sur le jeu de validation. Toutefois, ces expériences reposant sur une seule graine aléatoire (`random_state=42`) et un petit jeu de validation de 133 images, cet écart modéré doit être interprété avec prudence et ne garantit pas à lui seul un gain statistique sur d'autres graines.
+
+#### Engineering Checkpoint 6
+* **Justification de la métrique principale (`val_macro_f1`) :** Pour une classification multiclasse à 3 catégories (`angular_leaf_spot`, `bean_rust`, `healthy`), la *Macro-F1* calcule la moyenne arithmétique du score F1 (équilibre précision/rappel) de chaque classe indépendamment de sa fréquence. Elle garantit ainsi que le modèle sélectionné détecte correctement les trois états sanitaires sans négliger une classe au profit des autres.
+* **Pourquoi n'utiliser le jeu de test qu'après la sélection du modèle ?** Le jeu de test (`test`, 128 images) doit rester une mesure impartiale de la capacité de généralisation sur des données totalement inédites. Si on l'utilisait pour comparer A, B et C et choisir les hyperparamètres, on introduirait une fuite d'information (*data leakage* / surapprentissage sur le jeu de test), ce qui rendrait l'évaluation finale artificiellement optimiste.
